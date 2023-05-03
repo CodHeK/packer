@@ -3,7 +3,6 @@ This repo is means to replicate JS bundlers (like webpack) in a very simple way 
 
 #### Usage:
 
-- Make sure you `npm link` the two packages: `packer` and `packer-cli` first to your app.
 - Create a `packer.config.js` in your app you want to bundle.
   
   ```
