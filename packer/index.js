@@ -80,7 +80,7 @@ class Packer {
         
         return { fileId, transpiledCode };
     }
-/
+
     bundleWrapper(fileMap, transpiledFiles, filePath) {
         const code = fileMap.get(filePath);
         
