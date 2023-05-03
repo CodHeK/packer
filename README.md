@@ -1,5 +1,4 @@
-### Packer.
-
+### Packer 📦
 This repo is means to replicate JS bundlers (like webpack) in a very simple way to understand how they work on a high level.
 
 #### Usage:
