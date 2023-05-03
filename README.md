@@ -1,9 +1,9 @@
 ### Packer 📦
-This repo is means to replicate JS bundlers (like webpack) in a very simple way to understand how they work on a high level.
+This repo is a means to replicate JS bundlers (like webpack) in a very simple way to understand how they work on a high level.
 
 #### Usage:
 
-- Create a `packer.config.js` in your app you want to bundle.
+- Create `packer.config.js` in your app you want to bundle.
   
   ```
   module.exports = {
