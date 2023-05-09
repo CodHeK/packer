@@ -3,7 +3,8 @@ const moduleMap = {
         "use strict";
 
 var _main = require(1);
-console.log((0, _main.sum)(1, 2));
+var $e = document.getElementById('app');
+$e.innerText = "".concat(5 + (0, _main.sum)(1, 5));
         },
 	1: function(require, module, exports) {
         "use strict";

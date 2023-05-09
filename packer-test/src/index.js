@@ -1,3 +1,5 @@
 import { sum } from './ops/main.js';
 
-console.log(sum(1, 2));
+
+const $e = document.getElementById('app');
+$e.innerText = `${5 + sum(1, 5)}`;

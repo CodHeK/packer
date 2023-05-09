@@ -4,11 +4,10 @@ const fs = require('fs');
 const path = require('path');
 const { getFileIdForPath, getPathFromFileId, resetState } = require("./utils/file-id-mapper");
 const { findRequiresPlugin, getRequiresForPath } = require("./utils/get-requires");
-const { REQUIRE_HELPER } = require('./utils/constants');
+const { REQUIRE_HELPER, INDEX_HTML, HMR } = require('./utils/constants');
 
 class Packer {
     constructor() {
-
     }
 
     getSafePath(pathURL) {
@@ -30,6 +29,9 @@ class Packer {
             /node_modules/,
             /package.json/,
             /packer.config.js/,
+            /package-lock.json/,
+            /.git*/,
+            /build/
         ];
 
         return EXCLUDED_PATTERNS.some((p) => p.test(filePath));
@@ -112,17 +114,27 @@ class Packer {
         return finalBundle;
     }
 
-    storeOutput(bundledOutput, packageDir, outputConfig) {
-        const folderName = `${packageDir}/build`;
+    writeFile(data, path) {
+        const writeStream = fs.createWriteStream(path);
+        writeStream.write(data);
+        writeStream.end();
+    }
 
-        if (!fs.existsSync(folderName)) {
-            fs.mkdirSync(folderName);
+    storeOutput(bundledOutput, packageDir, outputConfig) {
+        const outputPath = `${packageDir}/build`;
+
+        if (!fs.existsSync(outputPath)) {
+            fs.mkdirSync(outputPath);
         }
 
-        const outputFilePath = path.join(folderName, outputConfig.filename);
-        const writeStream = fs.createWriteStream(outputFilePath);
-        writeStream.write(bundledOutput);
-        writeStream.end();
+        const outputFilePath = path.join(outputPath, outputConfig.filename);
+        this.writeFile(bundledOutput, outputFilePath);
+
+        const outputFilePathHTML = path.join(outputPath, 'index.html');
+        this.writeFile(INDEX_HTML, outputFilePathHTML);
+
+        const outputFilePathHMR = path.join(outputPath, 'hmr.js');
+        this.writeFile(HMR, outputFilePathHMR);
     }
 
     async bundle(packageDir, config) {
@@ -135,6 +147,8 @@ class Packer {
         const bundledOutput = this.bundleWrapper(fileMap, {}, entryFilePath);
 
         this.storeOutput(bundledOutput, packageDir, output);
+
+        return Promise.resolve();
     }
 };
 

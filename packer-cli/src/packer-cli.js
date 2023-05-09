@@ -3,8 +3,9 @@ const fs = require('fs');
 const { pathToFileURL } = require("url");
 
 const Packer = require('packer');
+const PackerDevServer = require('packer-dev-server');
 
-const commands = [ 'config' ];
+const commands = [ '--config', 'serve' ];
 const DEFAULT_CONFIG_FILE = 'packer.config.js';
 const PACKAGE_JSON_FILE = 'package.json';
 
@@ -17,13 +18,21 @@ class PackerCLI {
     return decodeURIComponent(pathURL);
   }
 
-  fetchCommandValue(cmd) {
+  isValidCommand(cmd) {
+    return commands.includes(cmd);
+  }
+
+  fetchCommand(args) {
+    return args[2];
+  }
+
+  fetchCommandValue(args, cmd) {
     if(commands.includes(cmd)) {
-        const customIndex = process.argv.indexOf(`--${cmd}`);
+        const customIndex = args.indexOf(`${cmd}`);
         let customValue;
 
         if (customIndex > -1) {
-            customValue = process.argv[customIndex + 1];
+            customValue = args[customIndex + 1];
         }
 
         return customValue;
@@ -40,14 +49,29 @@ class PackerCLI {
   }
 
   async run(args) {
-    const configPath = this.fetchCommandValue('config') || DEFAULT_CONFIG_FILE;
-    const config = await this.load(configPath);
+    const cmd = this.fetchCommand(args);
+    if(this.isValidCommand(cmd)) {
+      if(cmd === 'serve') {
+        const server = new PackerDevServer();
+        const config = await this.load(DEFAULT_CONFIG_FILE);
 
-    const packageJSONPath = pathToFileURL(PACKAGE_JSON_FILE).pathname;
-    const packageDir = path.dirname(packageJSONPath);
+        const packageJSONPath = pathToFileURL(PACKAGE_JSON_FILE).pathname;
+        const packageDir = this.getSafePath(path.dirname(packageJSONPath));
+        const buildDirPath = `${packageDir}/build`;
 
-    const pckr = new Packer();
-    pckr.bundle(packageDir, config);
+        server.start(packageDir, buildDirPath, config);
+      }
+      else {
+        const configPath = this.fetchCommandValue(args, 'config') || DEFAULT_CONFIG_FILE;
+        const config = await this.load(configPath);
+
+        const packageJSONPath = pathToFileURL(PACKAGE_JSON_FILE).pathname;
+        const packageDir = path.dirname(packageJSONPath);
+
+        const pckr = new Packer();
+        pckr.bundle(packageDir, config);
+      }
+    }
   }
 };
 
