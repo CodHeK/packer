@@ -14,7 +14,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.sum = void 0;
 var sum = function sum(a, b) {
-  var offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
+  var offset = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 10;
   return a + b + offset;
 };
 exports.sum = sum;
@@ -50,6 +50,7 @@ this.hotUpdate = function(updatedModules) {
     requireFunc(id);
 
     // Re-initialize
+    delete cache[0];
     requireFunc(0);
   }
 };

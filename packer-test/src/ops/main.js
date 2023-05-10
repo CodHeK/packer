@@ -1,1 +1,1 @@
-export const sum = (a, b, offset = 1) => a + b + offset;
+export const sum = (a, b, offset = 10) => a + b + offset;

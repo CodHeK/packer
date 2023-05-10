@@ -8,6 +8,7 @@ const HOT_UPDATE_HELPER = `this.hotUpdate = function(updatedModules) {
     requireFunc(id);
 
     // Re-initialize
+    delete cache[0];
     requireFunc(0);
   }
 };
