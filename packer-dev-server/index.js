@@ -15,8 +15,6 @@ class PackerDevServer {
             ignored: (path) => [ 'node_modules', 'build' ].some((dir) => path.includes(dir)) 
         });
 
-        let replacedModule = null;
-
         watcher.on('change', async (path) => {
             await pckr.bundle(
                 packageDir,
@@ -24,8 +22,7 @@ class PackerDevServer {
                 { 
                     path, 
                     callback: (fileId, filePath, updatedModule) => {
-                        replacedModule = updatedModule;
-                        io.emit('update', { fileId, filePath });
+                        io.emit('update', { fileId, filePath, updatedModule: { [fileId]: updatedModule } });
                     }
                 }
             );
@@ -36,13 +33,6 @@ class PackerDevServer {
         await pckr.bundle(packageDir, config);
 
         app.use('/', express.static(buildDirPath));
-
-        app.get('/hot-update/:fileId', function(req, res) {
-            const fileId = req.params.fileId;
-            if(replacedModule) {
-                res.send(`hotUpdate(${JSON.stringify({ [fileId]: replacedModule })});`);
-            }
-        }); 
     
         // serve the app
         http.listen(3001, function() {

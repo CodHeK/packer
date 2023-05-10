@@ -5,7 +5,7 @@ const moduleMap = {
 var _main = require(1);
 var _mul = require(2);
 var $e = document.getElementById('app');
-$e.innerHTML = "<div>\n    <h1>This is text and the sum is: </h1>\n    <h2 style=\"color: green;\">".concat((0, _main.sum)(1, 0), "</h2>\n\n    <h1>This is text and the multiplied value is:</h1>\n    <h2 style=\"color: red;\">").concat((0, _mul.mully)(1, 0), "</h2>\n</div>\n");
+$e.innerHTML = "<div>\n    <h1>This is text and the sum is: </h1>\n    <h2 style=\"color: green;\">".concat((0, _main.sum)(1, 10), "</h2>\n\n    <h1>This is text and the multiplied value is: </h1>\n    <h2 style=\"color: red;\">").concat((0, _mul.mully)(1, 0), "</h2>\n</div>\n");
         },
 	1: function(require, module, exports) {
         "use strict";
@@ -36,6 +36,15 @@ exports.mully = mully;
 
 
 // Require Helper
+
+const initWS = function() {
+  const socket = io();
+
+  socket.on('update', function(info) {
+    window.hotUpdate(info.updatedModule);
+  });
+}
+
 const cache = {};
 
 const requireFunc = function(requireId) {
@@ -52,6 +61,7 @@ const requireFunc = function(requireId) {
 };
 
 requireFunc(0);
+initWS();
 
 this.hotUpdate = function(updatedModules) {
   for(const id in updatedModules) {
@@ -67,27 +77,3 @@ this.hotUpdate = function(updatedModules) {
     requireFunc(0);
   }
 };
-
-
-/* This file is included in the page running the app */
-(function() {
-  const socket = io();
-
-  socket.on('update', function(info) {
-    // window.location.reload();
-    downloadUpdatedModule(info);
-  });
-
-  function downloadUpdatedModule(info) {
-    const { fileId } = info;
-
-    var head = document.getElementsByTagName("head")[0];
-    var script = document.createElement("script");
-    script.type = "text/javascript";
-    script.charset = "utf-8";
-    script.src =  "/hot-update/" + fileId;
-    head.appendChild(script);
-
-    setTimeout(() => head.removeChild(script));
-  }
-})();

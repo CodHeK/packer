@@ -110,10 +110,11 @@ class Packer {
         finalBundle += "\n}"
 
         finalBundle += "\n\n\n// Require Helper";
-        finalBundle += `\n${REQUIRE_HELPER}`;
-        finalBundle += `\n${HOT_UPDATE_HELPER}`;
         finalBundle += `\n${HMR}`;
 
+        finalBundle += `\n${REQUIRE_HELPER}`;
+        finalBundle += `\n${HOT_UPDATE_HELPER}`;
+        
         return { finalBundle, moduleMap };
     }
 
