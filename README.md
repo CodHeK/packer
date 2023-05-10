@@ -1,5 +1,5 @@
 ### Packer 📦
-This repo is a means to replicate JS bundlers (like webpack) in a very simple way to understand how they work on a high level.
+This repo is a means to replicate JS bundlers (like webpack) in a very simple way to understand how they work on a high level and to get an idea of how HMR works.
 
 #### Usage:
 
