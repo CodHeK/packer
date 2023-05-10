@@ -1,0 +1,1 @@
+export const mully = (a, b) => a * b;

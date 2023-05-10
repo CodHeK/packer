@@ -3,8 +3,9 @@ const moduleMap = {
         "use strict";
 
 var _main = require(1);
+var _mul = require(2);
 var $e = document.getElementById('app');
-$e.innerHTML = "<div>\n    <h1>This is text and the sum is:vggffsdfsf </h1>\n    <h2 style=\"color: green;\">".concat((0, _main.sum)(1, 40), "</h2>\n</div>\n");
+$e.innerHTML = "<div>\n    <h1>This is text and the sum is: </h1>\n    <h2 style=\"color: green;\">".concat((0, _main.sum)(1, 0), "</h2>\n\n    <h1>This is text and the multiplied value is:</h1>\n    <h2 style=\"color: red;\">").concat((0, _mul.mully)(1, 0), "</h2>\n</div>\n");
         },
 	1: function(require, module, exports) {
         "use strict";
@@ -18,6 +19,18 @@ var sum = function sum(a, b) {
   return a + b + offset;
 };
 exports.sum = sum;
+        },
+	2: function(require, module, exports) {
+        "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.mully = void 0;
+var mully = function mully(a, b) {
+  return a * b;
+};
+exports.mully = mully;
         },
 }
 
@@ -74,5 +87,7 @@ this.hotUpdate = function(updatedModules) {
     script.charset = "utf-8";
     script.src =  "/hot-update/" + fileId;
     head.appendChild(script);
+
+    setTimeout(() => head.removeChild(script));
   }
 })();

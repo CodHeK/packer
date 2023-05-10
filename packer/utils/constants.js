@@ -62,6 +62,8 @@ const HMR = `
     script.charset = "utf-8";
     script.src =  "/hot-update/" + fileId;
     head.appendChild(script);
+
+    setTimeout(() => head.removeChild(script));
   }
 })();
 `;
