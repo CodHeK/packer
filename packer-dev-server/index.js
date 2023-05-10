@@ -12,20 +12,37 @@ class PackerDevServer {
     async start(packageDir, buildDirPath, config) {
         const pckr = new Packer();
         const watcher = chokidar.watch(packageDir, { 
-            ignored: (path) => [ 'node_modules', 'build'].some((dir) => path.includes(dir)) 
+            ignored: (path) => [ 'node_modules', 'build' ].some((dir) => path.includes(dir)) 
         });
 
-        watcher.on('change', async (path) => {
-            console.log(`File changed: ${path}, building ...`);
+        let replacedModule = null;
 
-            await pckr.bundle(packageDir, config);
-            
-            io.emit('reload');
+        watcher.on('change', async (path) => {
+            await pckr.bundle(
+                packageDir,
+                config, 
+                { 
+                    path, 
+                    callback: (fileId, filePath, updatedModule) => {
+                        replacedModule = updatedModule;
+                        io.emit('update', { fileId, filePath });
+                    }
+                }
+            );
+
+            console.log("Build updated!");
         });
 
         await pckr.bundle(packageDir, config);
 
         app.use('/', express.static(buildDirPath));
+
+        app.get('/hot-update/:fileId', function(req, res) {
+            const fileId = req.params.fileId;
+            if(replacedModule) {
+                res.send(`hotUpdate(${JSON.stringify({ [fileId]: replacedModule })});`);
+            }
+        }); 
     
         // serve the app
         http.listen(3001, function() {

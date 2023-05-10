@@ -3,7 +3,7 @@ let fileToId = {};
 let idToFile = {};
 
 function getFileIdForPath(path) {
-  if (fileToId[path]) {
+  if (fileToId[path] !== undefined) {
     return fileToId[path];
   }
 

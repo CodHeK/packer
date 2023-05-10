@@ -1,3 +1,18 @@
+const HOT_UPDATE_HELPER = `this.hotUpdate = function(updatedModules) {
+  for(const id in updatedModules) {
+    delete cache[id];
+
+    const updatedModule = new Function('require', 'module', 'exports', updatedModules[id]);
+    moduleMap[id] = updatedModule;
+
+    requireFunc(id);
+
+    // Re-initialize
+    requireFunc(0);
+  }
+};
+`;
+
 const REQUIRE_HELPER = `const cache = {};
 
 const requireFunc = function(requireId) {
@@ -24,27 +39,35 @@ const INDEX_HTML = `
   </body>
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src="index.js"></script>
-  <script src="hmr.js"></script>
 </html>
 `;
 
 const HMR = `
 /* This file is included in the page running the app */
 (function() {
-  // create an instance of Socket.IO for listening
-  // to websocket messages
   const socket = io();
 
-  // listen for 'file-change' message
-  socket.on('reload', function(msg) {
-    window.location.reload();
+  socket.on('update', function(info) {
+    // window.location.reload();
+    downloadUpdatedModule(info);
   });
+
+  function downloadUpdatedModule(info) {
+    const { fileId } = info;
+
+    var head = document.getElementsByTagName("head")[0];
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.charset = "utf-8";
+    script.src =  "/hot-update/" + fileId;
+    head.appendChild(script);
+  }
 })();
 `;
-
 
 module.exports = {
     REQUIRE_HELPER,
     INDEX_HTML,
-    HMR
+    HMR,
+    HOT_UPDATE_HELPER,
 };

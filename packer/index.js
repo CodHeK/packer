@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { getFileIdForPath, getPathFromFileId, resetState } = require("./utils/file-id-mapper");
 const { findRequiresPlugin, getRequiresForPath } = require("./utils/get-requires");
-const { REQUIRE_HELPER, INDEX_HTML, HMR } = require('./utils/constants');
+const { REQUIRE_HELPER, INDEX_HTML, HMR, HOT_UPDATE_HELPER } = require('./utils/constants');
 
 class Packer {
     constructor() {
@@ -83,12 +83,14 @@ class Packer {
         return { fileId, transpiledCode };
     }
 
-    bundleWrapper(fileMap, transpiledFiles, filePath) {
+    bundleWrapper(fileMap, transpiledFiles, moduleMap, filePath) {
         const code = fileMap.get(filePath);
         
         const { fileId, transpiledCode } = this.transform(filePath, code);
 
         const requires = getRequiresForPath(filePath);
+
+        moduleMap[fileId] = `${transpiledCode}`;
 
         // Transpiled code is in, now wrap it in a function
         transpiledFiles[fileId] = `function(require, module, exports) {
@@ -96,10 +98,8 @@ class Packer {
         }`;
         requires.forEach((requireId) => {
             const requirePath = getPathFromFileId(requireId);
-            this.bundleWrapper(fileMap, transpiledFiles, requirePath);
+            this.bundleWrapper(fileMap, transpiledFiles, moduleMap, requirePath).finalBundle;
         });
-
-        resetState();
 
         let finalBundle = "const moduleMap = {";
         Object.keys(transpiledFiles).forEach((id) => {
@@ -107,11 +107,14 @@ class Packer {
             finalBundle += `${id}: ${transpiledFiles[id]}`;
             finalBundle += ",";
         });
-        finalBundle += "\n}";
+        finalBundle += "\n}"
+
         finalBundle += "\n\n\n// Require Helper";
         finalBundle += `\n${REQUIRE_HELPER}`;
+        finalBundle += `\n${HOT_UPDATE_HELPER}`;
+        finalBundle += `\n${HMR}`;
 
-        return finalBundle;
+        return { finalBundle, moduleMap };
     }
 
     writeFile(data, path) {
@@ -132,21 +135,27 @@ class Packer {
 
         const outputFilePathHTML = path.join(outputPath, 'index.html');
         this.writeFile(INDEX_HTML, outputFilePathHTML);
-
-        const outputFilePathHMR = path.join(outputPath, 'hmr.js');
-        this.writeFile(HMR, outputFilePathHMR);
     }
 
-    async bundle(packageDir, config) {
+    async bundle(packageDir, config, update = undefined) {
+        resetState();
+
         const { entry, output } = config;
 
         const entryFilePath = this.getSafePath(pathToFileURL(entry).pathname);
         packageDir = this.getSafePath(packageDir);
 
         const fileMap = await this.parse(packageDir);
-        const bundledOutput = this.bundleWrapper(fileMap, {}, entryFilePath);
+        const { finalBundle: bundledOutput, moduleMap } = this.bundleWrapper(fileMap, {}, {}, entryFilePath);
 
         this.storeOutput(bundledOutput, packageDir, output);
+
+        if(update) {
+            const { path, callback } = update;
+            const fileId = getFileIdForPath(path);
+
+            callback(fileId, path, moduleMap[fileId]);
+        }
 
         return Promise.resolve();
     }
